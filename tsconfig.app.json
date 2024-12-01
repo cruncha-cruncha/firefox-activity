@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["react/src", "electron/globals.d.ts"]
+  "include": ["react/src", "electron/**/*.d.ts"]
 }

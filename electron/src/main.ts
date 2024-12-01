@@ -1,10 +1,6 @@
-// const { app, BrowserWindow } = require("electron");
-// const path = require("node:path");
-
 import { app, BrowserWindow } from "electron";
 import { join } from "path";
-
-import "./api";
+import { setupApi } from "./api";
 
 const createWindow = () => {
   const mainWindow = new BrowserWindow({
@@ -21,6 +17,7 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   createWindow();
+  setupApi();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

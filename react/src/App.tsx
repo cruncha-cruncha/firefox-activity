@@ -13,6 +13,19 @@ function App() {
     []
   );
 
+  const callTestSqlite = useCallback(
+    async () => await backend.testSqlite("a message"),
+    []
+  );
+
+  const getData = useCallback(
+    async () => {
+      const data = await backend.getData({});
+      console.log("got data", data);
+    },
+    []
+  );
+
   return (
     <>
       <h1>Vite + React</h1>
@@ -28,6 +41,8 @@ function App() {
         Click on the Vite and React logos to learn more
       </p>
       <button onClick={updateNodeVersion}>Node version is {nodeVersion}</button>
+      <button onClick={callTestSqlite}>Test Sqlite</button>
+      <button onClick={getData}>Get Data</button>
     </>
   );
 }

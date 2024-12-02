@@ -1,50 +1,109 @@
-import { useCallback, useState } from "react";
-// import reactLogo from './assets/react.svg'
+import { useCallback, useEffect, useState } from "react";
+import { subDays, format, add, parse, subHours } from "date-fns";
+import { Row } from "../../electron/src/read-local/row";
 import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [data, setData] = useState<Row[]>([]);
+  const formatString = "yyyy-MM-dd'T'HH:mm";
 
-  const [nodeVersion, setNodeVersion] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    const now = new Date();
+    setStartTime(format(now, formatString));
+    setEndTime(format(subDays(now, 7), formatString));
+  }, []);
 
-  const updateNodeVersion = useCallback(
-    async () =>
-      setNodeVersion(await backend.nodeVersion("Hello from App.tsx!")),
-    []
-  );
+  const getData = useCallback(async () => {
+    const startUnix =
+      parse(startTime, formatString, new Date()).getTime() * 1000;
+    const endUnix = parse(endTime, formatString, new Date()).getTime() * 1000;
+    const data = await backend.getData({
+      limit: 5,
+      endTime: startUnix,
+      startTime: endUnix,
+    });
+    console.log("got data", data);
+    setData(data);
+  }, [startTime, endTime]);
 
-  const callTestSqlite = useCallback(
-    async () => await backend.testSqlite("a message"),
-    []
-  );
+  const addToStartTime = useCallback(() => {
+    console.log("add to start time");
+    setStartTime(
+      format(
+        add(parse(startTime, formatString, new Date()), { hours: 8 }),
+        formatString,
+      ),
+    );
+  }, [startTime]);
 
-  const getData = useCallback(
-    async () => {
-      const data = await backend.getData({});
-      console.log("got data", data);
-    },
-    []
-  );
+  const addToEndTime = useCallback(() => {
+    console.log("add to end time");
+    setEndTime(
+      format(
+        subHours(parse(endTime, formatString, new Date()), 8),
+        formatString,
+      ),
+    );
+  }, [endTime]);
+
+  /*
+id: number;
+url: string;
+title: string;
+description: string;
+last_visit_date: number;
+visit_count: number;
+title, url (collapsed by default), description, visit_count (collapsed by default), last_visit_date (collapsed by default)
+  */
 
   return (
-    <>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+    <div id="first-child" className="relative flex flex-col">
+      <div className="top-date-range">
+        <label htmlFor="start-time">Start Time</label>
+        <input
+          type="datetime-local"
+          id="start-time"
+          value={startTime}
+          onChange={(e) => setStartTime(e.target.value)}
+        />
+        <button onClick={addToStartTime}>+ 8 hours</button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      <button onClick={updateNodeVersion}>Node version is {nodeVersion}</button>
-      <button onClick={callTestSqlite}>Test Sqlite</button>
-      <button onClick={getData}>Get Data</button>
-    </>
+      <div className="results-list grow">
+        <button onClick={getData}>Get Data</button>
+        <ul>
+          {data.map((row) => (
+            <ResultRow row={row} />
+          ))}
+        </ul>
+      </div>
+      <div className="bottom-date-range">
+        <label htmlFor="end-time">End Time</label>
+        <input
+          type="datetime-local"
+          id="end-time"
+          value={endTime}
+          onChange={(e) => setEndTime(e.target.value)}
+        />
+        <button onClick={addToEndTime}>+ 8 hours</button>
+      </div>
+      <div className="side-panel absolute right-0 h-full w-12 bg-black"></div>
+    </div>
   );
 }
+
+export const ResultRow = ({ row }: { row: Row }) => {
+  const domain = new URL(row.url).hostname;
+  return (
+    <li key={row.url} className="results-row gap-1 grid grid-cols-2">
+      <span className="title">{row.title}</span>
+      <span className="domain">{domain}</span>
+      <span className="description hidden">{row.description}</span>
+      <span className="visit_count hidden">{row.visit_count}</span>
+      <span className="last_visit_date hidden">{row.last_visit_date}</span>
+    </li>
+  );
+};
 
 export default App;

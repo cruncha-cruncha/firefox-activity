@@ -15,30 +15,8 @@ const setupDB = async () => {
     .then(() => sqlite);
 };
 
-const testDB = async (db: SQLiteHandle) => {
-  await db
-    .query(makeQuery())
-    .then((rows) => console.log("TEST RESULT", rows))
-    .catch((err) => console.error("TEST ERROR", err));
-};
-
 export const setupApi = async () => {
   const db = await setupDB();
-
-  ipcMain.handle("node-version", (event, msg: string) => {
-    console.log(event);
-    console.log(msg);
-
-    return process.versions.node;
-  });
-
-  ipcMain.handle("test-sqlite", (event, msg: string) => {
-    console.log("handling test-sqlite");
-
-    testDB(db);
-
-    return "tested sqlite";
-  });
 
   ipcMain.handle("get-data", (event, msg: QueryParams) => {
     return db.query(makeQuery(msg));

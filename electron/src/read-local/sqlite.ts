@@ -1,5 +1,6 @@
 import sqlite3 from "sqlite3";
 import { QueryParams } from "./query-params";
+import { Row } from "./row";
 
 export class SQLiteHandle {
   #conn: sqlite3.Database | null = null;
@@ -29,7 +30,7 @@ export class SQLiteHandle {
         if (err) {
           reject(err);
         } else {
-          resolve(rows);
+          resolve(rows as Row[]);
         }
       });
     });

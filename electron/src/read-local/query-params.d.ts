@@ -1,6 +1,6 @@
 export type QueryParams = {
-  startTime?: string;
-  endTime?: string;
+  startTime?: number;
+  endTime?: number;
   limit?: number;
   ascending?: boolean;
 };

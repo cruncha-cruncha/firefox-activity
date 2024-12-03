@@ -58,12 +58,12 @@ export const makeQuery = (params: QueryParams = {}) => {
     order = "ASC";
   }
 
-  let limit = 1;
+  let limit = 1000;
   if (params.limit) {
     limit = params.limit;
   }
 
-  return `
+  const out = `
     SELECT
       mp.id,
       mp.url,
@@ -76,4 +76,8 @@ export const makeQuery = (params: QueryParams = {}) => {
     ORDER BY mp.last_visit_date ${order}
     LIMIT ${limit};
   `;
+
+  console.log(out);
+
+  return out;
 };

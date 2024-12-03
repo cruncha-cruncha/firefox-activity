@@ -20,16 +20,13 @@ function App() {
       parse(startTime, formatString, new Date()).getTime() * 1000;
     const endUnix = parse(endTime, formatString, new Date()).getTime() * 1000;
     const data = await backend.getData({
-      limit: 5,
       endTime: startUnix,
       startTime: endUnix,
     });
-    console.log("got data", data);
     setData(data);
   }, [startTime, endTime]);
 
   const addToStartTime = useCallback(() => {
-    console.log("add to start time");
     setStartTime(
       format(
         add(parse(startTime, formatString, new Date()), { hours: 8 }),
@@ -39,7 +36,6 @@ function App() {
   }, [startTime]);
 
   const addToEndTime = useCallback(() => {
-    console.log("add to end time");
     setEndTime(
       format(
         subHours(parse(endTime, formatString, new Date()), 8),
@@ -47,6 +43,10 @@ function App() {
       ),
     );
   }, [endTime]);
+
+  const goToTop = useCallback(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   /*
 id: number;
@@ -60,8 +60,7 @@ title, url (collapsed by default), description, visit_count (collapsed by defaul
 
   return (
     <div id="first-child" className="relative flex flex-col">
-      <div className="top-date-range">
-        <label htmlFor="start-time">Start Time</label>
+      <div className="top-date-range flex justify-around">
         <input
           type="datetime-local"
           id="start-time"
@@ -70,7 +69,7 @@ title, url (collapsed by default), description, visit_count (collapsed by defaul
         />
         <button onClick={addToStartTime}>+ 8 hours</button>
       </div>
-      <div className="results-list grow">
+      <div className="results-list grow overflow-y-scroll">
         <button onClick={getData}>Get Data</button>
         <ul>
           {data.map((row) => (
@@ -78,8 +77,7 @@ title, url (collapsed by default), description, visit_count (collapsed by defaul
           ))}
         </ul>
       </div>
-      <div className="bottom-date-range">
-        <label htmlFor="end-time">End Time</label>
+      <div className="bottom-date-range flex justify-around">
         <input
           type="datetime-local"
           id="end-time"
@@ -87,18 +85,28 @@ title, url (collapsed by default), description, visit_count (collapsed by defaul
           onChange={(e) => setEndTime(e.target.value)}
         />
         <button onClick={addToEndTime}>+ 8 hours</button>
+        <button onClick={goToTop}>top</button>
       </div>
-      <div className="side-panel absolute right-0 h-full w-12 bg-black"></div>
+      {/* <div className="side-panel absolute right-0 h-full w-12 bg-black"></div> */}
     </div>
   );
 }
 
 export const ResultRow = ({ row }: { row: Row }) => {
   const domain = new URL(row.url).hostname;
+  const copyToClipboard = (val: string) => {
+    navigator.clipboard.writeText(val);
+  };
+
   return (
-    <li key={row.url} className="results-row gap-1 grid grid-cols-2">
+    <li key={row.url} className="results-row grid grid-cols-2 gap-1">
       <span className="title">{row.title}</span>
-      <span className="domain">{domain}</span>
+      <span
+        className="domain cursor-pointer"
+        onClick={() => copyToClipboard(row.url)}
+      >
+        {domain}
+      </span>
       <span className="description hidden">{row.description}</span>
       <span className="visit_count hidden">{row.visit_count}</span>
       <span className="last_visit_date hidden">{row.last_visit_date}</span>

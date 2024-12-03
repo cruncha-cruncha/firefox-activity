@@ -2,11 +2,11 @@
 
 ## Setup
 
-- nvm use
-3 terminal tabs:
-- npm run dev (run React + Vite)
-- npm run watch-ts (run electron typescript compiler)
-- npm run build (run electron)
+- `nvm use`
+then use 3 terminal tabs:
+- `npm run dev` (run React + Vite)
+- `npm run watch-ts` (run electron typescript compiler)
+- `npm run build` (run electron)
 
 ## Plans
 
@@ -19,6 +19,7 @@
 - side panel should have a refresh button
 - make google searches one result
 - show domain name, but not url. Click url to copy full path
+- will have to use WebAssembly for text summarization (tfidf?)
 
 ## Resources
 

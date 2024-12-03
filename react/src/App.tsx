@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { subDays, format, add, parse, subHours } from "date-fns";
+import { subDays, format, add, parse, subHours, isAfter } from "date-fns";
 import { Row } from "../../electron/src/read-local/row";
 import "./App.css";
 
@@ -8,6 +8,11 @@ function App() {
   const [endTime, setEndTime] = useState("");
   const [data, setData] = useState<Row[]>([]);
   const formatString = "yyyy-MM-dd'T'HH:mm";
+  const sortReverse = isAfter(
+    parse(endTime, formatString, new Date()),
+    parse(startTime, formatString, new Date()),
+  );
+  const ADD_HOURS = 8;
 
   useEffect(() => {
     const now = new Date();
@@ -20,29 +25,48 @@ function App() {
       parse(startTime, formatString, new Date()).getTime() * 1000;
     const endUnix = parse(endTime, formatString, new Date()).getTime() * 1000;
     const data = await backend.getData({
-      endTime: startUnix,
-      startTime: endUnix,
+      endTime: sortReverse ? endUnix : startUnix,
+      startTime: sortReverse ? startUnix : endUnix,
+      ascending: sortReverse ? true : false,
     });
     setData(data);
-  }, [startTime, endTime]);
+  }, [startTime, endTime, sortReverse]);
 
   const addToStartTime = useCallback(() => {
-    setStartTime(
-      format(
-        add(parse(startTime, formatString, new Date()), { hours: 8 }),
-        formatString,
-      ),
-    );
-  }, [startTime]);
+    if (sortReverse) {
+      setStartTime(
+        format(
+          subHours(parse(startTime, formatString, new Date()), ADD_HOURS),
+          formatString,
+        ),
+      );
+    } else {
+      setStartTime(
+        format(
+          add(parse(startTime, formatString, new Date()), { hours: ADD_HOURS }),
+          formatString,
+        ),
+      );
+    }
+  }, [startTime, sortReverse]);
 
   const addToEndTime = useCallback(() => {
-    setEndTime(
-      format(
-        subHours(parse(endTime, formatString, new Date()), 8),
-        formatString,
-      ),
-    );
-  }, [endTime]);
+    if (sortReverse) {
+      setEndTime(
+        format(
+          add(parse(endTime, formatString, new Date()), { hours: ADD_HOURS }),
+          formatString,
+        ),
+      );
+    } else {
+      setEndTime(
+        format(
+          subHours(parse(endTime, formatString, new Date()), ADD_HOURS),
+          formatString,
+        ),
+      );
+    }
+  }, [endTime, sortReverse]);
 
   const goToTop = useCallback(() => {
     window.scrollTo(0, 0);
@@ -73,7 +97,7 @@ title, url (collapsed by default), description, visit_count (collapsed by defaul
         <button onClick={getData}>Get Data</button>
         <ul>
           {data.map((row) => (
-            <ResultRow row={row} />
+            <ResultRow key={row.id} row={row} />
           ))}
         </ul>
       </div>
@@ -99,7 +123,7 @@ export const ResultRow = ({ row }: { row: Row }) => {
   };
 
   return (
-    <li key={row.url} className="results-row grid grid-cols-2 gap-1">
+    <li className="results-row grid grid-cols-2 gap-1">
       <span className="title">{row.title}</span>
       <span
         className="domain cursor-pointer"

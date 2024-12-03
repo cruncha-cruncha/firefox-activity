@@ -77,7 +77,5 @@ export const makeQuery = (params: QueryParams = {}) => {
     LIMIT ${limit};
   `;
 
-  console.log(out);
-
   return out;
 };

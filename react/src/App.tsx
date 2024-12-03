@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { subDays, format, add, parse, subHours, isAfter } from "date-fns";
+import { subDays, format, add, parse, isAfter } from "date-fns";
 import { Row } from "../../electron/src/read-local/row";
 import "./App.css";
 
@@ -33,39 +33,35 @@ function App() {
   }, [startTime, endTime, sortReverse]);
 
   const addToStartTime = useCallback(() => {
+    let coef = 1;
     if (sortReverse) {
-      setStartTime(
-        format(
-          subHours(parse(startTime, formatString, new Date()), ADD_HOURS),
-          formatString,
-        ),
-      );
-    } else {
-      setStartTime(
-        format(
-          add(parse(startTime, formatString, new Date()), { hours: ADD_HOURS }),
-          formatString,
-        ),
-      );
+      coef = -1;
     }
+
+    setStartTime(
+      format(
+        add(parse(startTime, formatString, new Date()), {
+          hours: coef * ADD_HOURS,
+        }),
+        formatString,
+      ),
+    );
   }, [startTime, sortReverse]);
 
   const addToEndTime = useCallback(() => {
+    let coef = -1;
     if (sortReverse) {
-      setEndTime(
-        format(
-          add(parse(endTime, formatString, new Date()), { hours: ADD_HOURS }),
-          formatString,
-        ),
-      );
-    } else {
-      setEndTime(
-        format(
-          subHours(parse(endTime, formatString, new Date()), ADD_HOURS),
-          formatString,
-        ),
-      );
+      coef = 1;
     }
+
+    setEndTime(
+      format(
+        add(parse(endTime, formatString, new Date()), {
+          hours: coef * ADD_HOURS,
+        }),
+        formatString,
+      ),
+    );
   }, [endTime, sortReverse]);
 
   const goToTop = useCallback(() => {
